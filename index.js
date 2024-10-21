@@ -1,6 +1,7 @@
+const express = require('express');
 const { Telegraf } = require('telegraf');
 
-// Replace with your actual bot token
+const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // Historical data placeholder for pattern recognition (can be expanded)
@@ -44,18 +45,33 @@ bot.start((ctx) => {
 
 // Predict command handler
 bot.command('predict', (ctx) => {
+    const args = ctx.message.text.split(' ').slice(1);
+    
+    if (args.length === 0 || isNaN(args[0])) {
+        ctx.reply('Please specify a valid number of mines (1-24).');
+        return;
+    }
+
+    const numMines = parseInt(args[0]);
+
+    if (numMines < 1 || numMines > 24) {
+        ctx.reply('Please enter a number between 1 and 24.');
+        return;
+    }
+
+    // Store the number of mines in user context for later use
+    ctx.session.numMines = numMines;
+
     ctx.reply('Please enter your Stake client ID:');
-    bot.on('text', (clientIdMsg) => {
-        const clientIdSeed = clientIdMsg.text.trim();
-        const numMines = parseInt(ctx.message.text.split(' ')[1]);
+});
 
-        if (!numMines || numMines < 1 || numMines > 24) {
-            ctx.reply('Please enter a valid number of mines (1-24).');
-            return;
-        }
-
+// Handle client ID input
+bot.on('text', (ctx) => {
+    if (ctx.session.numMines) {
+        const clientIdSeed = ctx.message.text.trim();
+        
         // Generate predictions based on the client ID seed
-        const { minePositions, safePositions } = predictMines(clientIdSeed, numMines);
+        const { minePositions, safePositions } = predictMines(clientIdSeed, ctx.session.numMines);
 
         // Create a 5x5 grid with guaranteed safe positions
         const gridSize = 5;
@@ -83,10 +99,27 @@ bot.command('predict', (ctx) => {
         }
 
         ctx.reply(`Predicted Pattern:\n${response}`);
-    });
+
+        // Clear session data after processing
+        delete ctx.session.numMines; 
+    } else {
+        ctx.reply("Please start a new prediction by using /predict <number_of_mines>.");
+    }
+});
+
+// Handle webhook for Render deployment
+app.post('/webhook', (req, res) => {
+    bot.handleUpdate(req.body);
+    res.sendStatus(200); // Respond with 200 OK
 });
 
 // Launch the bot
 bot.launch().then(() => {
     console.log('Bot is running...');
 }).catch(err => console.error(err));
+
+// Start Express server for webhook handling
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
