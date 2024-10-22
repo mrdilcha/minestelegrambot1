@@ -1,8 +1,12 @@
 const express = require('express');
 const { Telegraf } = require('telegraf');
+const session = require('telegraf/session');
 
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
+
+// Use session middleware
+bot.use(session());
 
 // Historical data placeholder for pattern recognition (can be expanded)
 let historicalData = [];
