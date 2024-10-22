@@ -62,6 +62,11 @@ bot.command('predict', (ctx) => {
         return;
     }
 
+    // Initialize session if it doesn't exist
+    if (!ctx.session) {
+        ctx.session = {};
+    }
+
     // Store the number of mines in user context for later use
     ctx.session.numMines = numMines;
 
@@ -71,7 +76,7 @@ bot.command('predict', (ctx) => {
 // Handle client ID input
 bot.on('text', (ctx) => {
     // Check if numMines is defined in the session before accessing it
-    if (ctx.session.numMines) {
+    if (ctx.session && ctx.session.numMines) {
         const clientIdSeed = ctx.message.text.trim();
         
         // Generate predictions based on the client ID seed
