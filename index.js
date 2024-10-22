@@ -4,7 +4,7 @@ const { Telegraf, session } = require('telegraf'); // Import session from telegr
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Use session middleware
+// Use built-in session middleware
 bot.use(session());
 
 // Historical data placeholder for pattern recognition (can be expanded)
