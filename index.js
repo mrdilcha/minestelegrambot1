@@ -4,7 +4,7 @@ const { Telegraf, session } = require('telegraf'); // Import session from telegr
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-// Use built-in session middleware
+// Use built-in session middleware immediately after initializing the bot
 bot.use(session());
 
 // Historical data placeholder for pattern recognition (can be expanded)
@@ -70,6 +70,7 @@ bot.command('predict', (ctx) => {
 
 // Handle client ID input
 bot.on('text', (ctx) => {
+    // Check if numMines is defined in the session before accessing it
     if (ctx.session.numMines) {
         const clientIdSeed = ctx.message.text.trim();
         
