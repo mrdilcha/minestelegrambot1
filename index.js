@@ -1,6 +1,5 @@
 const express = require('express');
-const { Telegraf } = require('telegraf');
-const session = require('telegraf/session'); // Correctly import the session middleware
+const { Telegraf, session } = require('telegraf'); // Import session from telegraf
 
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
